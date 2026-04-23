@@ -1,6 +1,6 @@
 import React from "react"
 
-const SellerPageHeader = ({
+const PageHeader = ({
     title,
     description,
 }: {
@@ -17,5 +17,5 @@ const SellerPageHeader = ({
     )
 }
 
-export default SellerPageHeader
+export default PageHeader
 
