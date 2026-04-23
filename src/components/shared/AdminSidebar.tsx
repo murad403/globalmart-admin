@@ -1,33 +1,9 @@
 "use client"
-
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {
-  CircleHelp,
-  DollarSign,
-  FileBarChart,
-  LayoutGrid,
-  ListTree,
-  LogOut,
-  MessageSquare,
-  Package,
-  Settings,
-  ShoppingBag,
-  Users,
-} from "lucide-react"
+import { Bot, CircleHelp, DollarSign, FileBarChart, FilePenLine, LayoutGrid, ListTree, LogOut, MessageSquare, Package, Settings, Users } from "lucide-react"
 
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-} from "@/components/ui/sidebar"
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from "@/components/ui/sidebar"
 
 const NAV_ITEMS = [
   { title: "Overview", href: "/", icon: LayoutGrid },
@@ -35,10 +11,10 @@ const NAV_ITEMS = [
   { title: "Products", href: "/products", icon: Package },
   { title: "Message", href: "/messages", icon: MessageSquare },
   { title: "Categories", href: "/categories", icon: ListTree },
-  { title: "All Customers", href: "/customers", icon: ShoppingBag },
+  { title: "AI Customers", href: "/ai-customers", icon: Bot },
   { title: "Finance", href: "/finance", icon: DollarSign },
   { title: "Reports", href: "/reports", icon: FileBarChart },
-  { title: "Contents", href: "/contents", icon: FileBarChart },
+  { title: "Contents", href: "/contents", icon: FilePenLine },
   { title: "FAQ", href: "/faq", icon: CircleHelp },
   { title: "Settings", href: "/settings", icon: Settings },
 ]

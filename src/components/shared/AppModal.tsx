@@ -36,9 +36,9 @@ const AppModal = ({
       />
 
       <div
-        className={`relative z-10 w-full ${maxWidthClassName} overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl`}
+        className={`relative z-10 w-full ${maxWidthClassName} overflow-hidden rounded-xl bg-white shadow-2xl`}
       >
-        <div className="flex items-start justify-between border-b border-slate-200 px-4 py-3">
+        <div className="flex items-start justify-between px-4 py-3">
           <div>
             <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
             {subtitle ? <p className="mt-1 text-xs text-slate-500">{subtitle}</p> : null}
@@ -55,7 +55,11 @@ const AppModal = ({
 
         <div className="px-4 py-3">{children}</div>
 
-        {footer ? <div className="border-t border-slate-200 px-4 py-3">{footer}</div> : null}
+        {footer ? (
+          <div className="px-4 py-3 **:data-[slot=button]:h-auto **:data-[slot=button]:py-3">
+            {footer}
+          </div>
+        ) : null}
       </div>
     </div>
   )
