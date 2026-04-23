@@ -81,7 +81,7 @@ const AdminSidebar = () => {
               tooltip="Logout"
               className="h-8 text-rose-300 hover:bg-rose-500/10 hover:text-rose-200"
             >
-              <Link href="/">
+              <Link href="/auth/sign-in">
                 <LogOut className="size-4 shrink-0" />
                 <span className="group-data-[collapsible=icon]:hidden">Logout</span>
               </Link>
