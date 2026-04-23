@@ -33,7 +33,7 @@ const MonthlyRevenue = () => {
         <p className="text-xs text-slate-500">Overview of platform earnings</p>
       </CardHeader>
       <CardContent>
-        <div className="rounded-lg border border-slate-200 bg-slate-50/40 p-2 md:p-3">
+        <div className="rounded-lg border border-slate-200 bg-slate-50/40 p-2 md:p-3 [&_svg]:outline-none [&_*:focus-visible]:outline-none">
           <div className="h-60 w-full md:h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 8, right: 6, left: -10, bottom: 0 }}>

@@ -42,7 +42,7 @@ const UserDistribution = () => {
                 paddingAngle={1}
               >
                 {distributionData.map((entry) => (
-                  <Cell key={entry.name} fill={entry.color} stroke="#ffffff" strokeWidth={1} />
+                  <Cell key={entry.name} fill={entry.color} stroke="#ffffff" strokeWidth={1} style={{outline: "none "}} />
                 ))}
               </Pie>
             </PieChart>
