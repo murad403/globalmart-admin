@@ -27,7 +27,7 @@ const AdminSidebar = () => {
       collapsible="icon"
       className="border-r-0 [--sidebar:#08152f] [--sidebar-foreground:#d5e0ff] [--sidebar-accent:#1f4fff] [--sidebar-accent-foreground:#ffffff] [--sidebar-border:rgba(255,255,255,0.12)]"
     >
-      <SidebarHeader className="border-b border-white/10 p-3">
+      <SidebarHeader className="border-b border-white/10 px-3 py-5">
         <div className="flex items-center gap-2 overflow-hidden">
           <div className="grid size-6 shrink-0 place-items-center rounded-full bg-linear-to-br from-fuchsia-500 to-indigo-500 text-[10px] font-bold text-white">
             GM
