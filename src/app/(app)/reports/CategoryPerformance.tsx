@@ -33,11 +33,15 @@ const CategoryPerformance = () => {
             dataKey="value"
             label={({ name, cx, cy, midAngle, outerRadius }) => {
               const RADIAN = Math.PI / 180;
-              const r = outerRadius + 20;
-              const x = cx + r * Math.cos(-midAngle * RADIAN);
-              const y = cy + r * Math.sin(-midAngle * RADIAN);
+              const safeCx = cx ?? 0;
+              const safeCy = cy ?? 0;
+              const safeMidAngle = midAngle ?? 0;
+              const safeOuterRadius = outerRadius ?? 0;
+              const r = safeOuterRadius + 20;
+              const x = safeCx + r * Math.cos(-safeMidAngle * RADIAN);
+              const y = safeCy + r * Math.sin(-safeMidAngle * RADIAN);
               return (
-                <text x={x} y={y} fill="#374151" textAnchor={x > cx ? "start" : "end"} dominantBaseline="central" fontSize={11}>
+                <text x={x} y={y} fill="#374151" textAnchor={x > safeCx ? "start" : "end"} dominantBaseline="central" fontSize={11}>
                   {name}
                 </text>
               );
@@ -48,7 +52,13 @@ const CategoryPerformance = () => {
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip formatter={(v: number) => `${v}%`} contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12 }} />
+          <Tooltip
+            formatter={(value) => {
+              const numericValue = Array.isArray(value) ? Number(value[0] ?? 0) : Number(value ?? 0);
+              return `${numericValue}%`;
+            }}
+            contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12 }}
+          />
         </PieChart>
       </ResponsiveContainer>
     </div>

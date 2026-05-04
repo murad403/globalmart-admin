@@ -52,7 +52,10 @@ const RevenueExpensesProfitTrend = () => {
           <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} width={55} />
           <Tooltip
             contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12 }}
-            formatter={(v: number) => `$${v.toLocaleString()}`}
+            formatter={(value) => {
+              const numericValue = Array.isArray(value) ? Number(value[0] ?? 0) : Number(value ?? 0);
+              return `$${numericValue.toLocaleString()}`;
+            }}
           />
           <Legend
             iconType="circle"
