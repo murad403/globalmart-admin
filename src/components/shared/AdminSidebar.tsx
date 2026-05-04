@@ -21,7 +21,6 @@ const NAV_ITEMS = [
 
 const AdminSidebar = () => {
   const pathname = usePathname()
-
   return (
     <Sidebar
       collapsible="icon"
