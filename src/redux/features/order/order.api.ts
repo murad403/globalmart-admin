@@ -28,7 +28,15 @@ const orderApi = baseApi.injectEndpoints({
                 };
             },
         }),
+        getOrderDetails: builder.query({
+            query: (id: string) => {
+                return {
+                    url: `/admin/order-management/${id}/`,
+                    method: "GET",
+                };
+            },
+        }),
     }),
 });
 
-export const { useGetOrdersQuery } = orderApi;
+export const { useGetOrdersQuery, useGetOrderDetailsQuery } = orderApi;
