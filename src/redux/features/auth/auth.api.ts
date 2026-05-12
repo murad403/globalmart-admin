@@ -1,14 +1,5 @@
 import baseApi from "@/redux/api/baseApi";
-import {
-    SignInRequest,
-    SignInResponse,
-    ForgotPasswordRequest,
-    ForgotPasswordResponse,
-    VerifyOtpRequest,
-    VerifyOtpResponse,
-    ResetPasswordRequest,
-    ResetPasswordResponse
-} from "./auth.type";
+import { SignInRequest, SignInResponse, ForgotPasswordRequest, ForgotPasswordResponse, VerifyOtpRequest, VerifyOtpResponse, ResetPasswordRequest, ResetPasswordResponse, ChangePasswordRequest, ChangePasswordResponse } from "./auth.type";
 
 const authApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -39,6 +30,26 @@ const authApi = baseApi.injectEndpoints({
                 method: "POST",
                 body: data
             })
+        }),
+        changePassword: builder.mutation<ChangePasswordResponse, ChangePasswordRequest>({
+            query: (data) => ({
+                url: "/auth/change-password",
+                method: "POST",
+                body: data
+            })
+        }),
+        getProfile: builder.query({
+            query: () => ({
+                url: "/profiles/me/",
+                method: "GET"
+            })
+        }),
+        updateProfile: builder.mutation({
+            query: (data) => ({
+                url: "/profiles/me/",
+                method: "PATCH",
+                body: data
+            })
         })
     })
 });
@@ -47,5 +58,8 @@ export const {
     useSignInMutation,
     useForgotPasswordMutation,
     useVerifyOtpMutation,
-    useResetPasswordMutation
+    useResetPasswordMutation,
+    useChangePasswordMutation,
+    useGetProfileQuery,
+    useUpdateProfileMutation
 } = authApi;

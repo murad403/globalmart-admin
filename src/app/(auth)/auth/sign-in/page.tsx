@@ -27,7 +27,10 @@ export default function SignIn() {
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
-    } = useForm<FormData>({ resolver: zodResolver(schema) });
+    } = useForm<FormData>({ resolver: zodResolver(schema), defaultValues: {
+        email: "email@gmail.com",
+        password: "14156",
+    } });
 
     const onSubmit = async (data: FormData) => {
         try {

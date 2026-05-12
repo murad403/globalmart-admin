@@ -56,3 +56,14 @@ export interface ResetPasswordResponse {
   message: string;
   request_id?: string;
 }
+
+export interface ChangePasswordRequest {
+  old_password: string;
+  new_password: string;
+}
+
+export interface ChangePasswordResponse {
+  success: boolean;
+  message: string;
+  request_id?: string;
+}
