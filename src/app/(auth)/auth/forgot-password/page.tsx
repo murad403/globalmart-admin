@@ -6,7 +6,8 @@ import { z } from "zod";
 import Link from "next/link";
 import { Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
-
+import { useForgotPasswordMutation } from "@/redux/features/auth/auth.api";
+import { toast } from "sonner";
 
 const schema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -16,6 +17,8 @@ type FormData = z.infer<typeof schema>;
 
 export default function ForgotPassword() {
   const router = useRouter();
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
+
   const {
     register,
     handleSubmit,
@@ -23,10 +26,24 @@ export default function ForgotPassword() {
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: FormData) => {
-    console.log(data);
-    // send reset email
-    router.push("/auth/verify-otp")
+    try {
+      const res = await forgotPassword({ email: data.email }).unwrap();
+      if (res.success) {
+        toast.success(res.message || "OTP sent successfully!");
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("reset_email", data.email);
+        }
+        router.push(`/auth/verify-otp?email=${encodeURIComponent(data.email)}`);
+      } else {
+        toast.error(res.message || "Failed to send OTP");
+      }
+    } catch (err: any) {
+      const errorMessage = err?.data?.message || err?.message || "Failed to send OTP. Please try again.";
+      toast.error(errorMessage);
+    }
   };
+
+  const loading = isSubmitting || isLoading;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full p-8">
@@ -54,10 +71,10 @@ export default function ForgotPassword() {
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={loading}
           className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60 cursor-pointer"
         >
-          {isSubmitting ? "Sending..." : "Submit"}
+          {loading ? "Sending..." : "Submit"}
         </button>
       </form>
 

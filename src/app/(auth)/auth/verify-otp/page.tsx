@@ -1,10 +1,13 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Timer } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useVerifyOtpMutation, useForgotPasswordMutation } from "@/redux/features/auth/auth.api";
+import { saveToken } from "@/utils/auth";
+import { toast } from "sonner";
 
 const schema = z.object({
   otp: z
@@ -15,16 +18,33 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export default function VerifyOtp() {
+function VerifyOtpForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryEmail = searchParams.get("email");
+  const [email, setEmail] = useState<string>("");
+
+  const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
+  const [forgotPassword, { isLoading: isResending }] = useForgotPasswordMutation();
+
   const [digits, setDigits] = useState<string[]>(Array(6).fill(""));
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
   const {
     handleSubmit,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
+
+  useEffect(() => {
+    if (queryEmail) {
+      setEmail(queryEmail);
+    } else if (typeof window !== "undefined") {
+      const stored = sessionStorage.getItem("reset_email");
+      if (stored) setEmail(stored);
+    }
+  }, [queryEmail]);
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -54,15 +74,53 @@ export default function VerifyOtp() {
   };
 
   const onSubmit = async (data: FormData) => {
-    console.log("OTP:", data.otp);
-    router.push("/auth/reset-password")
+    if (!email) {
+      toast.error("Email address not found. Please restart from Forgot Password.");
+      return;
+    }
+    try {
+      const res = await verifyOtp({ email, otp: data.otp }).unwrap();
+      if (res.success) {
+        toast.success(res.message || "Email verified successfully!");
+        if (res.data?.access) {
+          await saveToken(res.data.access, res.data.user?.user_type || "admin");
+        }
+        router.push("/auth/reset-password");
+      } else {
+        toast.error(res.message || "Verification failed");
+      }
+    } catch (err: any) {
+      const errorMessage = err?.data?.message || err?.message || "Invalid OTP. Please try again.";
+      toast.error(errorMessage);
+    }
   };
+
+  const handleResend = async () => {
+    if (!email) {
+      toast.error("Email address not found.");
+      return;
+    }
+    if (isResending) return;
+    try {
+      const res = await forgotPassword({ email }).unwrap();
+      if (res.success) {
+        toast.success("A new OTP has been sent to your email.");
+        setTimeLeft(600);
+      } else {
+        toast.error(res.message || "Failed to resend OTP");
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to resend OTP. Please try again.");
+    }
+  };
+
+  const loading = isSubmitting || isLoading;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full p-8">
       <h1 className="text-2xl font-bold text-gray-900 text-center mb-1">Email OTP Verification</h1>
       <p className="text-gray-500 text-sm text-center mb-6">
-        OTP sent to your Email Address ending ******doe@example.com
+        OTP sent to your Email Address {email ? <span className="font-medium text-gray-800">{email}</span> : "ending ******doe@example.com"}
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -96,22 +154,30 @@ export default function VerifyOtp() {
           Didn't get the OTP?{" "}
           <button
             type="button"
-            onClick={() => setTimeLeft(600)}
-            className="text-gray-800 font-semibold hover:underline"
+            disabled={isResending}
+            onClick={handleResend}
+            className="text-gray-800 font-semibold hover:underline disabled:opacity-50"
           >
-            Resend OTP
+            {isResending ? "Resending..." : "Resend OTP"}
           </button>
         </p>
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={loading}
           className="w-full cursor-pointer bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60"
         >
-          {isSubmitting ? "Verifying..." : "Verify & Proceed"}
+          {loading ? "Verifying..." : "Verify & Proceed"}
         </button>
       </form>
     </div>
+  );
+}
 
+export default function VerifyOtp() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-gray-500">Loading verification...</div>}>
+      <VerifyOtpForm />
+    </Suspense>
   );
 }

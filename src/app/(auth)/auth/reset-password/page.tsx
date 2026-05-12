@@ -6,11 +6,18 @@ import { z } from "zod";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useResetPasswordMutation } from "@/redux/features/auth/auth.api";
+import { toast } from "sonner";
 
 const schema = z
   .object({
-    newPassword: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
+    newPassword: z
+      .string()
+      .min(8, "This password is too short. It must contain at least 8 characters.")
+      .refine((val) => !/^\d+$/.test(val), {
+        message: "This password is entirely numeric.",
+      }),
+    confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Passwords do not match",
@@ -23,6 +30,7 @@ export default function ResetPassword() {
   const router = useRouter();
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
 
   const {
     register,
@@ -31,9 +39,24 @@ export default function ResetPassword() {
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: FormData) => {
-    console.log(data);
-    router.push("/auth/auth-success")
+    try {
+      const res = await resetPassword({ new_password: data.newPassword }).unwrap();
+      if (res.success) {
+        toast.success(res.message || "Your password has been reset successfully.");
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("reset_email");
+        }
+        router.push("/auth/auth-success");
+      } else {
+        toast.error(res.message || "Failed to reset password");
+      }
+    } catch (err: any) {
+      const errorMessage = err?.data?.message || err?.message || "Failed to reset password. Please try again.";
+      toast.error(errorMessage);
+    }
   };
+
+  const loading = isSubmitting || isLoading;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full p-8">
@@ -81,10 +104,10 @@ export default function ResetPassword() {
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={loading}
           className="w-full bg-orange-500 cursor-pointer hover:bg-orange-600 text-white font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60"
         >
-          {isSubmitting ? "Saving..." : "Change Password"}
+          {loading ? "Saving..." : "Change Password"}
         </button>
       </form>
 
@@ -95,6 +118,5 @@ export default function ResetPassword() {
         </Link>
       </p>
     </div>
-
   );
 }

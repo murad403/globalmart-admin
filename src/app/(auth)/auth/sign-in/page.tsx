@@ -6,6 +6,9 @@ import { z } from "zod";
 import Link from "next/link";
 import { Eye, EyeOff, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSignInMutation } from "@/redux/features/auth/auth.api";
+import { saveToken } from "@/utils/auth";
+import { toast } from "sonner";
 
 const schema = z.object({
   email: z.string().trim().nonempty("Email is required").email("Invalid email"),
@@ -18,6 +21,8 @@ type FormData = z.infer<typeof schema>;
 export default function SignIn() {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
+    const [signIn, { isLoading }] = useSignInMutation();
+
     const {
         register,
         handleSubmit,
@@ -25,10 +30,34 @@ export default function SignIn() {
     } = useForm<FormData>({ resolver: zodResolver(schema) });
 
     const onSubmit = async (data: FormData) => {
-        console.log(data);
-        router.push('/')
-        // handle sign in
+        try {
+            const res = await signIn({
+                email: data.email,
+                password: data.password
+            }).unwrap();
+
+            if (res.success) {
+                const userType = res.data?.user?.user_type || "";
+                if (res.data?.access) {
+                    await saveToken(res.data.access, userType);
+                }
+
+                if (userType === "admin") {
+                    toast.success(res.message || "Login successful!");
+                    router.push('/');
+                } else {
+                    toast.error("Access Denied: Only administrators are permitted to access the dashboard.");
+                }
+            } else {
+                toast.error(res.message || "Login failed");
+            }
+        } catch (err: any) {
+            const errorMessage = err?.data?.message || err?.message || "Failed to sign in. Please try again.";
+            toast.error(errorMessage);
+        }
     };
+
+    const loading = isSubmitting || isLoading;
 
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full p-8">
@@ -93,10 +122,10 @@ export default function SignIn() {
 
                 <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={loading}
                     className="w-full bg-orange-500 cursor-pointer hover:bg-orange-600 text-white font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-60"
                 >
-                    {isSubmitting ? "Signing in..." : "Sign In"}
+                    {loading ? "Signing in..." : "Sign In"}
                 </button>
             </form>
         </div>
