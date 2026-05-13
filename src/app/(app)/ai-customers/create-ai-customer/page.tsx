@@ -110,7 +110,7 @@ export default function CreateAiCustomerPage() {
 
     const onSubmit = async (data: AiCustomerFormValues) => {
         try {
-            // Build FormData containing exactly the parameters requested
+            // Build highly compatible FormData encapsulating all possible DRF parser formats
             const formData = new FormData();
 
             formData.append("full_name", data.full_name);
@@ -124,13 +124,32 @@ export default function CreateAiCustomerPage() {
             formData.append("is_phone_verified", "false");
             formData.append("status", "false");
 
-            // Append nested structures as JSON stringified strings
+            // Format 1: Stringified JSON representation
             formData.append("profile", JSON.stringify(data.profile));
             formData.append("shiping_address", JSON.stringify(data.shiping_address));
+
+            // Format 2: Dotted notation for drf-writable-nested or standard flat multipart mapping
+            Object.entries(data.profile).forEach(([key, value]) => {
+                formData.append(`profile.${key}`, value || "");
+            });
+            Object.entries(data.shiping_address).forEach(([key, value]) => {
+                formData.append(`shiping_address.${key}`, value || "");
+            });
+
+            // Format 3: Bracket notation supporting standard PHP/Django form array serializations
+            Object.entries(data.profile).forEach(([key, value]) => {
+                formData.append(`profile[${key}]`, value || "");
+            });
+            Object.entries(data.shiping_address).forEach(([key, value]) => {
+                formData.append(`shiping_address[${key}]`, value || "");
+            });
 
             // Append uploaded image if available
             if (imageFile) {
                 formData.append("image", imageFile);
+            } else {
+                // Pass empty string or placeholder matching backend specification requirement if missing
+                formData.append("image", "");
             }
 
             await createAiCustomer(formData).unwrap();
@@ -426,7 +445,11 @@ export default function CreateAiCustomerPage() {
                             </label>
                             <input
                                 type="text"
-                                {...register("profile.country")}
+                                {...register("profile.country", {
+                                    onChange: (e) => {
+                                        setValue("shiping_address.country", e.target.value);
+                                    }
+                                })}
                                 className="w-full rounded-xl border border-slate-200 p-3 text-sm font-bold text-slate-950 focus:border-slate-950 focus:outline-none transition-all bg-slate-50 focus:bg-white"
                                 placeholder="Country"
                             />
@@ -442,7 +465,11 @@ export default function CreateAiCustomerPage() {
                             </label>
                             <input
                                 type="text"
-                                {...register("profile.state_province")}
+                                {...register("profile.state_province", {
+                                    onChange: (e) => {
+                                        setValue("shiping_address.state", e.target.value);
+                                    }
+                                })}
                                 className="w-full rounded-xl border border-slate-200 p-3 text-sm font-bold text-slate-950 focus:border-slate-950 focus:outline-none transition-all bg-slate-50 focus:bg-white"
                                 placeholder="State / Province"
                             />
@@ -490,7 +517,11 @@ export default function CreateAiCustomerPage() {
                             </label>
                             <input
                                 type="text"
-                                {...register("profile.street_address")}
+                                {...register("profile.street_address", {
+                                    onChange: (e) => {
+                                        setValue("shiping_address.address", e.target.value);
+                                    }
+                                })}
                                 className="w-full rounded-xl border border-slate-200 p-3 text-sm font-bold text-slate-950 focus:border-slate-950 focus:outline-none transition-all bg-slate-50 focus:bg-white"
                                 placeholder="Street address"
                             />
@@ -588,6 +619,21 @@ export default function CreateAiCustomerPage() {
                                 <span className="text-xs font-bold text-rose-600 mt-1 block">{errors.shiping_address.address.message}</span>
                             )}
                         </div>
+                        {/* Country */}
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                                Country <span className="text-rose-500">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                {...register("shiping_address.country")}
+                                className="w-full rounded-xl border border-slate-200 p-3 text-sm font-bold text-slate-950 focus:border-slate-950 focus:outline-none transition-all bg-slate-50 focus:bg-white"
+                                placeholder="Country"
+                            />
+                            {errors.shiping_address?.country && (
+                                <span className="text-xs font-bold text-rose-600 mt-1 block">{errors.shiping_address.country.message}</span>
+                            )}
+                        </div>
 
                         {/* State */}
                         <div>
@@ -605,21 +651,7 @@ export default function CreateAiCustomerPage() {
                             )}
                         </div>
 
-                        {/* Country */}
-                        <div>
-                            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                Country <span className="text-rose-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                {...register("shiping_address.country")}
-                                className="w-full rounded-xl border border-slate-200 p-3 text-sm font-bold text-slate-950 focus:border-slate-950 focus:outline-none transition-all bg-slate-50 focus:bg-white"
-                                placeholder="Country"
-                            />
-                            {errors.shiping_address?.country && (
-                                <span className="text-xs font-bold text-rose-600 mt-1 block">{errors.shiping_address.country.message}</span>
-                            )}
-                        </div>
+                        
                     </div>
                 </div>
 
