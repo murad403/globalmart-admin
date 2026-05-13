@@ -1,5 +1,5 @@
 import baseApi from "@/redux/api/baseApi";
-import { GetOrdersResponse } from "./order.type";
+import { GetOrdersResponse, GetWithdrawalsResponse } from "./order.type";
 
 export interface GetOrdersParams {
     page?: number;
@@ -36,7 +36,30 @@ const orderApi = baseApi.injectEndpoints({
                 };
             },
         }),
+        getOrderWithdrawalsRequest: builder.query<GetWithdrawalsResponse, { page?: number; status?: string; search?: string }>({
+            query: (params) => {
+                const filteredParams: Record<string, any> = {};
+                if (params?.page) filteredParams.page = params.page;
+                if (params?.status && params.status !== "all") filteredParams.status = params.status;
+                if (params?.search) filteredParams.search = params.search;
+
+                return {
+                    url: `/admin/withdrawal-requests/`,
+                    method: "GET",
+                    params: filteredParams,
+                };
+            },
+            providesTags: ["withdrawals"],
+        }),
+        updateWithdrawalStatus: builder.mutation<any, any>({
+            query: (data) => ({
+                url: `/admin/withdrawal-requests/approval/`,
+                method: "POST",
+                body: data,
+            }),
+            invalidatesTags: ["withdrawals"],
+        }),
     }),
 });
 
-export const { useGetOrdersQuery, useGetOrderDetailsQuery } = orderApi;
+export const { useGetOrdersQuery, useGetOrderDetailsQuery, useGetOrderWithdrawalsRequestQuery, useUpdateWithdrawalStatusMutation } = orderApi;

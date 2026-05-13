@@ -63,3 +63,33 @@ export interface GetOrdersResponse {
     meta: OrderMeta;
     data: Order[];
 }
+
+export interface WithdrawalPaymentDetails {
+    card_holder_name?: string;
+    card_number?: string;
+    card_expiry_date?: string;
+    [key: string]: any;
+}
+
+export interface WithdrawalRequest {
+    id: number;
+    user_id: number;
+    user_email: string;
+    amount: string;
+    payment_method: string;
+    payment_details: WithdrawalPaymentDetails | null;
+    status: string;
+    is_paid: boolean;
+    reference_id: string | null;
+    note: string | null;
+    requested_at: string;
+    updated_at: string;
+}
+
+export interface GetWithdrawalsResponse {
+    success: boolean;
+    message: string;
+    request_id?: string;
+    meta: OrderMeta;
+    data: WithdrawalRequest[];
+}

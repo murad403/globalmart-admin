@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { title: "Users", href: "/users", icon: Users },
   { title: "Products", href: "/products", icon: Package },
   { title: "Orders", href: "/orders", icon: ShoppingCart },
+  { title: "Withdrawals", href: "/withdrawals", icon: ShoppingCart },
   { title: "Categories", href: "/categories", icon: ListTree },
   { title: "AI Customers", href: "/ai-customers", icon: Bot },
   { title: "Message", href: "/messages", icon: MessageSquare },
