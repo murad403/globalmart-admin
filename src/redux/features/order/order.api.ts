@@ -13,7 +13,6 @@ const orderApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         getOrders: builder.query<GetOrdersResponse, GetOrdersParams>({
             query: (params) => {
-                // Filter out undefined or empty strings to build query string cleanly
                 const filteredParams: Record<string, any> = {};
                 if (params?.page) filteredParams.page = params.page;
                 if (params?.status) filteredParams.status = params.status;
