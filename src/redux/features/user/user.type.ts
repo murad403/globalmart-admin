@@ -11,6 +11,7 @@ export interface UserProfile {
     state_province?: string;
     city?: string;
     postal_Code?: string;
+    postal_code?: string;
     street_address?: string;
     created_at?: string;
     updated_at?: string;
@@ -88,4 +89,38 @@ export interface GetAllUsersParams {
     page?: number;
     search?: string;
     user_type?: string;
+}
+
+export interface CreateAiCustomerRequest {
+    full_name: string;
+    email: string;
+    phone: string;
+    user_type: string;
+    is_ai_customer: boolean;
+    is_email_verified: boolean;
+    is_phone_verified: boolean;
+    status: boolean;
+    profile: {
+        first_name: string;
+        last_name: string;
+        phone_number: string;
+        business_type: string;
+        business_name: string;
+        industry_category: string;
+        industry: string;
+        country: string;
+        state_province: string;
+        city: string;
+        postal_code: string;
+        street_address: string;
+    };
+    shiping_address: {
+        email: string;
+        phone: string;
+        first_name: string;
+        last_name: string;
+        country: string;
+        state: string;
+        address: string;
+    };
 }
