@@ -1,7 +1,7 @@
 "use client"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Bot, CircleHelp, DollarSign, FileBarChart, FilePenLine, LayoutGrid, ListTree, LogOut, MessageSquare, Package, Settings, ShoppingCart, Users } from "lucide-react"
+import { BanknoteArrowDown, Bot, CircleHelp, DollarSign, FileBarChart, FilePenLine, LayoutGrid, ListTree, LogOut, MessageSquare, Package, Settings, ShoppingCart, Users } from "lucide-react"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from "@/components/ui/sidebar"
 import { removeToken } from "@/utils/auth"
 
@@ -10,7 +10,7 @@ const NAV_ITEMS = [
   { title: "Users", href: "/users", icon: Users },
   { title: "Products", href: "/products", icon: Package },
   { title: "Orders", href: "/orders", icon: ShoppingCart },
-  { title: "Withdrawals", href: "/withdrawals", icon: ShoppingCart },
+  { title: "Withdrawals", href: "/withdrawals", icon: BanknoteArrowDown },
   { title: "Categories", href: "/categories", icon: ListTree },
   { title: "AI Customers", href: "/ai-customers", icon: Bot },
   { title: "Message", href: "/messages", icon: MessageSquare },

@@ -44,33 +44,6 @@ export default function SettingsPage() {
             </button>
           ))}
 
-          {/* System Status Card */}
-          <div className="mt-4 bg-blue-600 rounded-xl p-3 text-white">
-            <div className="flex items-center gap-2 mb-3">
-              <Server className="h-4 w-4" />
-              <span className="text-xs font-bold uppercase tracking-wide">System Status</span>
-            </div>
-            <div className="space-y-2">
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Server Load</span>
-                  <span>22%</span>
-                </div>
-                <div className="h-1.5 bg-blue-400 rounded-full">
-                  <div className="h-1.5 bg-green-400 rounded-full" style={{ width: "22%" }} />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Storage</span>
-                  <span>95.85%</span>
-                </div>
-                <div className="h-1.5 bg-blue-400 rounded-full">
-                  <div className="h-1.5 bg-yellow-400 rounded-full" style={{ width: "95.85%" }} />
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Content */}

@@ -9,7 +9,6 @@ import {
 } from "lucide-react"
 
 import MonthlyRevenue from "./overview/MonthlyRevenue"
-import SystemHealth from "./overview/SystemHealth"
 import UserDistribution from "./overview/UserDistribution"
 import PageHeader from "@/components/shared/PageHeader"
 import { Card, CardContent } from "@/components/ui/card"
@@ -112,9 +111,6 @@ const Page = () => {
           <UserDistribution />
         </section>
 
-        <section>
-          <SystemHealth />
-        </section>
       </main>
     </div>
   )

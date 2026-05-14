@@ -1,20 +1,22 @@
-"use client"
+"use client";
 
-import React from "react"
-
-import AppModal from "@/components/shared/AppModal"
-import { Button } from "@/components/ui/button"
+import React from "react";
+import AppModal from "@/components/shared/AppModal";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 type DeleteCategoryModalProps = {
-  open: boolean
-  categoryName: string
-  onClose: () => void
-  onConfirm: () => void
-}
+  open: boolean;
+  categoryName: string;
+  isDeleting?: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+};
 
 const DeleteCategoryModal = ({
   open,
   categoryName,
+  isDeleting = false,
   onClose,
   onConfirm,
 }: DeleteCategoryModalProps) => {
@@ -26,22 +28,32 @@ const DeleteCategoryModal = ({
       subtitle="This action cannot be undone"
       maxWidthClassName="max-w-md"
       footer={
-        <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" onClick={onClose}>
+        <div className="flex items-center justify-end gap-3 w-full">
+          <Button 
+            variant="outline" 
+            onClick={onClose}
+            disabled={isDeleting}
+            className="rounded-xl px-4 py-2.5 text-xs font-bold"
+          >
             Cancel
           </Button>
-          <Button className="bg-red-600 hover:bg-red-700" onClick={onConfirm}>
-            Delete Category
+          <Button 
+            className="bg-red-600 hover:bg-red-700 text-white rounded-xl px-5 py-2.5 text-xs font-bold flex items-center gap-1.5 shadow-xs" 
+            onClick={onConfirm}
+            disabled={isDeleting}
+          >
+            {isDeleting && <Loader2 className="size-3.5 animate-spin" />}
+            <span>Delete Category</span>
           </Button>
         </div>
       }
     >
-      <p className="text-sm text-slate-600">
-        Are you sure you want to delete
-        <span className="mx-1 font-semibold text-slate-900">{categoryName}</span>?
+      <p className="text-sm text-slate-600 leading-relaxed pt-1">
+        Are you sure you want to permanently delete the category
+        <span className="mx-1 font-bold text-slate-950">"{categoryName}"</span>? All catalog items mapped under this identifier may be impacted.
       </p>
     </AppModal>
-  )
-}
+  );
+};
 
-export default DeleteCategoryModal
+export default DeleteCategoryModal;
