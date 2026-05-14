@@ -1,7 +1,5 @@
 "use client";
-
 import PageHeader from "@/components/shared/PageHeader";
-import AvailableReports from "./AvailableReports";
 import CategoryPerformance from "./CategoryPerformance";
 import MonthlyUserActivity from "./MonthlyUserActivity";
 import ReportsStats from "./ReportsStats";
@@ -34,8 +32,6 @@ const ReportsPage = () => {
         {/* Top Products Table - full width */}
         <TopPerformingProducts />
 
-        {/* Available Reports - full width */}
-        <AvailableReports />
       </div>
     </div>
   );
