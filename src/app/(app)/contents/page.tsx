@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   FileText,
@@ -14,18 +15,35 @@ import {
   List,
   Menu,
   X,
+  Plus,
+  Trash2,
+  Save,
+  Loader2,
+  Layers,
 } from "lucide-react";
-import PageHeader from "@/components/shared/PageHeader";
+import { toast } from "sonner";
 
-/* ─── Pages ──────────────────────────────────────────────────────────────────── */
-const PAGES = [
-  { id: "about", label: "About Us", desc: "General company information", Icon: FileText },
-  { id: "returns", label: "Returns & Refunds", desc: "Customer return policies", Icon: RefreshCcw },
-  { id: "privacy", label: "Privacy Policy", desc: "Data privacy guidelines", Icon: ShieldCheck },
-  { id: "terms", label: "Terms of Service", desc: "Legal service agreements", Icon: ScrollText },
-  { id: "cookie", label: "Cookie Policy", desc: "Cookie usage guidelines", Icon: Cookie },
-  { id: "help", label: "Help Center", desc: "Cookie usage guidelines", Icon: HelpCircle },
-];
+import PageHeader from "@/components/shared/PageHeader";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  useGetAllContentsQuery,
+  useAddContentMutation,
+  useUpdateContentMutation,
+  useDeleteContentMutation,
+} from "@/redux/features/contents/contents.api";
+import { ContentItem } from "@/redux/features/contents/contents.type";
+
+/* ─── Dynamic Icon Resolver ──────────────────────────────────────────────────── */
+const resolvePageIcon = (title: string) => {
+  const lower = title.toLowerCase();
+  if (lower.includes("about")) return FileText;
+  if (lower.includes("return") || lower.includes("refund")) return RefreshCcw;
+  if (lower.includes("privacy")) return ShieldCheck;
+  if (lower.includes("term")) return ScrollText;
+  if (lower.includes("cookie")) return Cookie;
+  if (lower.includes("help") || lower.includes("support")) return HelpCircle;
+  return FileText;
+};
 
 /* ─── Toolbar button ─────────────────────────────────────────────────────────── */
 const ToolbarBtn = ({
@@ -46,14 +64,15 @@ const ToolbarBtn = ({
       e.preventDefault();
       onClick();
     }}
-    className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${active ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-      }`}
+    className={`size-8 flex items-center justify-center rounded-lg transition-all cursor-pointer ${
+      active ? "bg-slate-900 text-white shadow-2xs" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+    }`}
   >
     {children}
   </button>
 );
 
-/* ─── Rich Editor ────────────────────────────────────────────────────────────── */
+/* ─── Rich Editor Component ──────────────────────────────────────────────────── */
 const RichEditor = ({
   value,
   onChange,
@@ -103,8 +122,8 @@ const RichEditor = ({
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full min-h-[300px] px-5 py-4 text-sm font-mono text-gray-700 resize-none focus:outline-none bg-transparent"
-        placeholder="Enter raw HTML..."
+        className="w-full min-h-[360px] px-5 py-4 text-sm font-mono text-slate-800 resize-y focus:outline-none bg-slate-50/50 border-0"
+        placeholder="Enter raw HTML content payload..."
         spellCheck={false}
       />
     );
@@ -113,25 +132,26 @@ const RichEditor = ({
   return (
     <div className="flex flex-col">
       {/* Minimal toolbar — B I U = • */}
-      <div className="flex items-center gap-0.5 px-4 py-2 border-b border-gray-100">
+      <div className="flex items-center gap-1 px-4 py-2 border-b border-slate-100 bg-slate-50/30">
         <ToolbarBtn title="Bold" onClick={() => exec("bold")} active={fmts["bold"]}>
-          <Bold className="w-4 h-4" strokeWidth={2.5} />
+          <Bold className="size-4" strokeWidth={2.5} />
         </ToolbarBtn>
         <ToolbarBtn title="Italic" onClick={() => exec("italic")} active={fmts["italic"]}>
-          <Italic className="w-4 h-4" />
+          <Italic className="size-4" />
         </ToolbarBtn>
         <ToolbarBtn title="Underline" onClick={() => exec("underline")} active={fmts["underline"]}>
-          <Underline className="w-4 h-4" />
+          <Underline className="size-4" />
         </ToolbarBtn>
-        <ToolbarBtn title="Horizontal Rule" onClick={() => exec("insertHorizontalRule")}>
-          <Minus className="w-4 h-4" />
+        <div className="h-4 w-px bg-slate-200 mx-1" />
+        <ToolbarBtn title="Horizontal Rule border strip" onClick={() => exec("insertHorizontalRule")}>
+          <Minus className="size-4" />
         </ToolbarBtn>
-        <ToolbarBtn title="Bullet List" onClick={() => exec("insertUnorderedList")}>
-          <List className="w-4 h-4" />
+        <ToolbarBtn title="Bullet List itemization" onClick={() => exec("insertUnorderedList")}>
+          <List className="size-4" />
         </ToolbarBtn>
       </div>
 
-      {/* Editable area */}
+      {/* Editable Content Area */}
       <div
         ref={editorRef}
         contentEditable
@@ -139,16 +159,16 @@ const RichEditor = ({
         onInput={handleInput}
         onKeyUp={updateFmts}
         onMouseUp={updateFmts}
-        data-placeholder="Enter page content..."
+        data-placeholder="Start typing formatted dynamic page markup..."
         className="
-          min-h-[300px] px-5 py-4 text-sm text-gray-700 leading-relaxed focus:outline-none
-          [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-2
-          [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-2
-          [&_p]:mb-1.5
-          [&_hr]:border-gray-200 [&_hr]:my-3
-          [&_a]:text-blue-600 [&_a]:underline
+          min-h-[360px] px-5 py-4 text-sm text-slate-800 leading-relaxed focus:outline-none bg-white
+          [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ul]:space-y-1
+          [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_ol]:space-y-1
+          [&_p]:mb-2.5
+          [&_hr]:border-slate-200 [&_hr]:my-4
+          [&_a]:text-blue-600 [&_a]:underline [&_a]:font-medium
           empty:before:content-[attr(data-placeholder)]
-          empty:before:text-gray-300
+          empty:before:text-slate-400
           empty:before:pointer-events-none
         "
       />
@@ -156,157 +176,436 @@ const RichEditor = ({
   );
 };
 
-/* ─── Main ───────────────────────────────────────────────────────────────────── */
+/* ─── Main Dynamic Contents Interface ────────────────────────────────────────── */
 export default function ContentsPage() {
-  const [activePage, setActivePage] = useState("about");
-  const [contents, setContents] = useState<Record<string, string>>({});
-  const [rawMode, setRawMode] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Record<string, Date>>({});
-  const [autoTimer, setAutoTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  // Remote queries
+  const { data: response, isLoading } = useGetAllContentsQuery();
+  const [addContentMutation, { isLoading: isAdding }] = useAddContentMutation();
+  const [updateContentMutation, { isLoading: isUpdating }] = useUpdateContentMutation();
+  const [deleteContentMutation, { isLoading: isDeleting }] = useDeleteContentMutation();
+
+  const contentItems: ContentItem[] = response?.data || [];
+
+  // Active workspace item
+  const [selectedContentId, setSelectedContentId] = useState<number | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [rawMode, setRawMode] = useState(false);
 
-  const activeMeta = PAGES.find((p) => p.id === activePage)!;
+  // Local buffering variables for active item modifications
+  const [editTitle, setEditTitle] = useState("");
+  const [editSubTitle, setEditSubTitle] = useState("");
+  const [editHtmlContent, setEditHtmlContent] = useState("");
 
-  const handleChange = (html: string) => {
-    setContents((prev) => ({ ...prev, [activePage]: html }));
-    if (autoTimer) clearTimeout(autoTimer);
-    const t = setTimeout(() => {
-      setLastSaved((prev) => ({ ...prev, [activePage]: new Date() }));
-    }, 1800);
-    setAutoTimer(t);
+  // Creation modal view toggler
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newSubTitle, setNewSubTitle] = useState("");
+  const [newHtmlContent, setNewHtmlContent] = useState("");
+
+  // Auto-resolve initially active record when fetched items update
+  useEffect(() => {
+    if (contentItems.length > 0) {
+      // If currently selected ID is invalid or missing, auto focus first
+      if (!selectedContentId || !contentItems.some((c) => c.id === selectedContentId)) {
+        setSelectedContentId(contentItems[0].id);
+      }
+    } else {
+      setSelectedContentId(null);
+    }
+  }, [contentItems, selectedContentId]);
+
+  // Synchronize dynamic buffering variables matching active entity model
+  const activeItem = contentItems.find((c) => c.id === selectedContentId);
+
+  useEffect(() => {
+    if (activeItem) {
+      setEditTitle(activeItem.title || "");
+      setEditSubTitle(activeItem.sub_title || "");
+      setEditHtmlContent(activeItem.content || "");
+    } else {
+      setEditTitle("");
+      setEditSubTitle("");
+      setEditHtmlContent("");
+    }
+  }, [activeItem]);
+
+  // Save changes handler matching PATCH API requirements exactly
+  const handleSaveChanges = async () => {
+    if (!activeItem) return;
+    if (!editTitle.trim()) {
+      toast.error("Content Page Title cannot be empty.");
+      return;
+    }
+
+    try {
+      await updateContentMutation({
+        id: activeItem.id,
+        data: {
+          title: editTitle.trim(),
+          sub_title: editSubTitle.trim(),
+          content: editHtmlContent,
+        },
+      }).unwrap();
+
+      toast.success(`Content page "${editTitle}" updated successfully!`);
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to finalize content page updates.");
+    }
   };
 
-  const fmtTime = (d?: Date) =>
-    d
-      ? `Today at ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
-      : null;
+  // Submit trigger handler matching POST API requirements exactly
+  const handleCreateNewContent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim()) {
+      toast.error("Please enter a valid target page title.");
+      return;
+    }
+
+    try {
+      const created = await addContentMutation({
+        title: newTitle.trim(),
+        sub_title: newSubTitle.trim() || "General platform information",
+        content: newHtmlContent.trim() || "<p>Initial drafted page markup content...</p>",
+      }).unwrap();
+
+      toast.success(`Dynamic page "${created.data.title}" instantiated successfully!`);
+      // Reset view creation buffer parameters
+      setNewTitle("");
+      setNewSubTitle("");
+      setNewHtmlContent("");
+      setIsAddModalOpen(false);
+      // Auto transition perspective context onto dynamically generated ID
+      setSelectedContentId(created.data.id);
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to create dynamic page record.");
+    }
+  };
+
+  // Execute resource unbinding via DELETE API exactly
+  const handleDeleteContent = async (id: number, title: string) => {
+    if (!window.confirm(`Are you certain you wish to permanently delete the content page "${title}"?`)) {
+      return;
+    }
+
+    try {
+      await deleteContentMutation(id).unwrap();
+      toast.success(`Content page "${title}" successfully dropped.`);
+      if (selectedContentId === id) {
+        setSelectedContentId(null);
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to execute delete instruction on record.");
+    }
+  };
 
   return (
-    <div>
-      {/* Page title */}
-      <div className="pb-6 flex items-center gap-3">
-        {/* Mobile hamburger */}
+    <div className="space-y-6">
+      {/* Dynamic Title Header Bar */}
+      <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-5">
+        <div className="flex items-center gap-3">
+          {/* Responsive side overlay activation toggle */}
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+          >
+            <Menu className="size-5" />
+          </button>
+          <PageHeader title="Dynamic Contents" description="Manage customizable frontend content web pages, policies, and embedded HTML documents" />
+        </div>
+
         <button
           type="button"
-          onClick={() => setSidebarOpen(true)}
-          className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+          onClick={() => setIsAddModalOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
         >
-          <Menu className="w-5 h-5" />
+          <Plus className="size-4 stroke-3" />
+          <span>Add New Content Page</span>
         </button>
-        <div>
-          <PageHeader title="Contents" description="Manage public platform pages and policies" />
-        </div>
       </div>
 
-      <div className=" pb-10 flex gap-6 items-start">
-        {/* Mobile overlay */}
+      <div className="flex gap-6 items-start relative">
+        {/* Responsive viewport dimming backdrop */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/20 z-30 lg:hidden"
+            className="fixed inset-0 bg-slate-950/30 z-30 lg:hidden backdrop-blur-2xs transition-opacity"
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
-        {/* ── Sidebar ── */}
+        {/* ── Dynamic Sidebar Itemization ── */}
         <aside
           className={`
-            fixed top-0 left-0 h-full z-40 w-60 bg-white shadow-xl overflow-y-auto
+            fixed top-0 left-0 h-full z-40 w-64 bg-white shadow-2xl border-r border-slate-200 overflow-y-auto p-4
             transition-transform duration-300 ease-in-out
-            lg:static lg:translate-x-0 lg:z-auto lg:h-auto
-            lg:w-64 lg:shrink-0 lg:shadow-none lg:bg-transparent lg:overflow-visible
+            lg:static lg:translate-x-0 lg:z-auto lg:h-auto lg:w-64 lg:shrink-0 lg:shadow-none lg:border-r-0 lg:p-0 lg:bg-transparent
             ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           `}
         >
-          {/* Mobile header */}
-          <div className="flex items-center justify-between px-4 pt-5 pb-3 border-b border-gray-100 lg:hidden">
-            <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-              Platform Pages
+          {/* Portable side view heading */}
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 lg:hidden">
+            <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+              Available Pages
             </span>
-            <button onClick={() => setSidebarOpen(false)}>
-              <X className="w-4 h-4 text-gray-400" />
+            <button onClick={() => setSidebarOpen(false)} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400">
+              <X className="size-4" />
             </button>
           </div>
 
-          {/* Desktop label */}
-          <p className="hidden lg:block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
-            Platform Pages
+          <p className="hidden lg:block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 px-1">
+            Available Managed Pages
           </p>
 
-          <nav className="p-2 lg:p-0 space-y-0.5">
-            {PAGES.map(({ id, label, desc, Icon }) => {
-              const active = activePage === id;
-              return (
-                <button
-                  key={id}
-                  onClick={() => { setActivePage(id); setSidebarOpen(false); }}
-                  className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${active
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-700 hover:bg-gray-100"
-                    }`}
-                >
-                  <Icon
-                    className={`w-4 h-4 mt-0.5 shrink-0 ${active ? "text-white" : "text-gray-400"
-                      }`}
-                  />
-                  <div className="min-w-0">
-                    <p className={`text-sm font-semibold leading-snug ${active ? "text-white" : "text-gray-800"}`}>
-                      {label}
-                    </p>
-                    <p className={`text-xs mt-0.5 truncate ${active ? "text-blue-100" : "text-gray-400"}`}>
-                      {desc}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
-          </nav>
-        </aside>
-
-        {/* ── Editor card ── */}
-        <div className="flex-1 min-w-0 bg-white rounded-xl border border-gray-200 overflow-hidden">
-          {/* Card header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 px-5 py-3 border-b border-gray-100">
-            <h2 className="text-sm font-semibold text-gray-800">
-              Editing: {activeMeta.label}
-            </h2>
-            <span className="text-xs text-gray-400">
-              {fmtTime(lastSaved[activePage])
-                ? `Last updated: ${fmtTime(lastSaved[activePage])}`
-                : ""}
-            </span>
-          </div>
-
-          {/* Editor */}
-          <RichEditor
-            value={contents[activePage] ?? ""}
-            onChange={handleChange}
-            rawMode={rawMode}
-          />
-
-          {/* Footer */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-5 py-3 border-t border-gray-100">
-            <div className="flex items-center gap-4">
+          {isLoading ? (
+            /* Rich loading representations */
+            <div className="space-y-2">
+              <Skeleton className="h-14 w-full rounded-xl" />
+              <Skeleton className="h-14 w-full rounded-xl" />
+              <Skeleton className="h-14 w-full rounded-xl" />
+            </div>
+          ) : contentItems.length === 0 ? (
+            <div className="text-center py-8 px-3 rounded-xl border border-dashed border-slate-200 bg-slate-50/50">
+              <p className="text-xs text-slate-500 font-medium">No custom content pages available</p>
               <button
                 type="button"
-                onClick={() => setRawMode(false)}
-                className={`text-xs font-semibold uppercase tracking-wider transition-colors ${!rawMode ? "text-gray-800" : "text-gray-400 hover:text-gray-600"
-                  }`}
+                onClick={() => { setSidebarOpen(false); setIsAddModalOpen(true); }}
+                className="text-xs text-blue-600 font-bold underline mt-1.5 block mx-auto cursor-pointer"
               >
-                Rich Text Editor
-              </button>
-              <button
-                type="button"
-                onClick={() => setRawMode(true)}
-                className={`text-xs font-semibold uppercase tracking-wider transition-colors ${rawMode ? "text-gray-800" : "text-gray-400 hover:text-gray-600"
-                  }`}
-              >
-                Raw Formatting
+                Create initial page
               </button>
             </div>
-            <span className="text-xs text-gray-400">Auto-save: draft</span>
-          </div>
+          ) : (
+            <nav className="space-y-1">
+              {contentItems.map((item) => {
+                const active = selectedContentId === item.id;
+                const DynamicIcon = resolvePageIcon(item.title);
+
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => { setSelectedContentId(item.id); setSidebarOpen(false); }}
+                    className={`w-full flex items-start justify-between gap-2 px-3 py-2.5 rounded-xl text-left transition-all cursor-pointer group ${
+                      active
+                        ? "bg-blue-600 text-white shadow-xs"
+                        : "text-slate-700 hover:bg-slate-100/80"
+                    }`}
+                  >
+                    <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                      <DynamicIcon
+                        className={`size-4 mt-0.5 shrink-0 transition-colors ${
+                          active ? "text-white" : "text-slate-400 group-hover:text-slate-600"
+                        }`}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className={`text-xs font-bold leading-snug truncate ${active ? "text-white" : "text-slate-900"}`}>
+                          {item.title || "Untitled Page"}
+                        </p>
+                        <p className={`text-[11px] mt-0.5 truncate ${active ? "text-blue-100" : "text-slate-400"}`}>
+                          {item.sub_title || "No external description"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Quick Inline Trigger Drop */}
+                    <button
+                      type="button"
+                      title="Permanently remove content record"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteContent(item.id, item.title);
+                      }}
+                      disabled={isDeleting}
+                      className={`p-1 rounded-md transition-opacity opacity-0 group-hover:opacity-100 shrink-0 ${
+                        active ? "text-blue-200 hover:text-white hover:bg-blue-700" : "text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                      }`}
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
+            </nav>
+          )}
+        </aside>
+
+        {/* ── Editor Workspace Engine ── */}
+        <div className="flex-1 min-w-0 bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+          {isLoading ? (
+            <div className="p-6 space-y-4">
+              <Skeleton className="h-8 w-1/3 rounded-lg" />
+              <Skeleton className="h-4 w-1/4 rounded-lg" />
+              <Skeleton className="h-80 w-full rounded-xl mt-4" />
+            </div>
+          ) : activeItem ? (
+            <div>
+              {/* Core Page Attributes Editing Header */}
+              <div className="p-5 border-b border-slate-100 bg-slate-50/30 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex-1 space-y-1">
+                    <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block">
+                      Target Page Identifier Title
+                    </label>
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      placeholder="Enter target page title..."
+                      className="w-full bg-transparent text-base font-extrabold text-slate-900 placeholder:text-slate-400 focus:outline-none border-b border-transparent focus:border-slate-300 pb-0.5 transition-colors"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleSaveChanges}
+                      disabled={isUpdating}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-xs font-bold transition-all shadow-xs disabled:opacity-50 cursor-pointer"
+                    >
+                      {isUpdating ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
+                      <span>Save Changes</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block">
+                    Page Header Description Subtitle
+                  </label>
+                  <input
+                    type="text"
+                    value={editSubTitle}
+                    onChange={(e) => setEditSubTitle(e.target.value)}
+                    placeholder="Enter short contextual overview summary..."
+                    className="w-full bg-transparent text-xs text-slate-600 placeholder:text-slate-400 focus:outline-none border-b border-transparent focus:border-slate-300 pb-0.5 transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Document Markup Payload Rich Viewport */}
+              <RichEditor
+                key={activeItem.id} // Enforce total re-initialization on selection switch
+                value={editHtmlContent}
+                onChange={(html) => setEditHtmlContent(html)}
+                rawMode={rawMode}
+              />
+
+              {/* Engine Output Modes Toolbar */}
+              <div className="flex items-center justify-between gap-3 px-5 py-3 border-t border-slate-100 bg-slate-50/50">
+                <div className="flex items-center gap-2 bg-slate-200/60 p-0.5 rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setRawMode(false)}
+                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                      !rawMode ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    Formatted Layout
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRawMode(true)}
+                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                      rawMode ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    Raw Source HTML
+                  </button>
+                </div>
+
+                <span className="text-[11px] font-semibold text-slate-400">
+                  ID: #{activeItem.id}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-20 px-4">
+              <Layers className="size-12 text-slate-300 mx-auto mb-3" />
+              <p className="text-sm font-bold text-slate-700">No Content Record Highlighted</p>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                Select an item from the side perspective tree navigation to configure static page components or push new entries directly.
+              </p>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Inline Modal Trigger Creation Form Engine */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-xs transition-all">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+              <h3 className="text-sm font-extrabold text-slate-900">Instantiate New Target Page</h3>
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateNewContent} className="p-6 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 block">
+                  Page Title Name <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder="e.g. Terms of Distribution"
+                  className="w-full h-10 border border-slate-200 rounded-xl px-3.5 text-xs text-slate-800 font-semibold focus:outline-none focus:border-slate-900"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 block">
+                  Page Description Subtitle
+                </label>
+                <input
+                  type="text"
+                  value={newSubTitle}
+                  onChange={(e) => setNewSubTitle(e.target.value)}
+                  placeholder="e.g. Mandatory regulatory compliance parameters"
+                  className="w-full h-10 border border-slate-200 rounded-xl px-3.5 text-xs text-slate-800 focus:outline-none focus:border-slate-900"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 block">
+                  Initial HTML Document Payload
+                </label>
+                <textarea
+                  rows={4}
+                  value={newHtmlContent}
+                  onChange={(e) => setNewHtmlContent(e.target.value)}
+                  placeholder="<p>Enter foundational html formatting body...</p>"
+                  className="w-full border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-700 focus:outline-none focus:border-slate-900 resize-y"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isAdding}
+                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                >
+                  {isAdding && <Loader2 className="size-3.5 animate-spin" />}
+                  <span>Push Page Document</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
