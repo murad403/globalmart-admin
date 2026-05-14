@@ -6,12 +6,10 @@ import { z } from "zod";
 import { X } from "lucide-react";
 import { Faq } from "@/redux/features/faq/faq.type";
 
-const CATEGORIES = ["General", "Getting Started", "Payments", "Integration", "Shipping", "Returns"];
-
 const schema = z.object({
   category: z.string().min(1, "Category is required"),
-  question: z.string().min(5, "Question must be at least 5 characters"),
-  answer: z.string().min(10, "Answer must be at least 10 characters"),
+  question: z.string().min(1, "Question is required"),
+  answer: z.string().min(1, "Answer is required"),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -20,9 +18,15 @@ interface Props {
   faq: Faq;
   onClose: () => void;
   onSave: (id: number, data: { category: string; question: string; answer: string }) => Promise<void>;
+  categories?: string[];
 }
 
-export default function EditFaqModal({ faq, onClose, onSave }: Props) {
+export default function EditFaqModal({ faq, onClose, onSave, categories }: Props) {
+  const baseCategories = categories && categories.length > 0 ? categories : ["General"];
+  const categoriesList = baseCategories.includes(faq.category)
+    ? baseCategories
+    : [faq.category, ...baseCategories];
+
   const {
     register,
     handleSubmit,
@@ -57,7 +61,7 @@ export default function EditFaqModal({ faq, onClose, onSave }: Props) {
               {...register("category")}
               className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 bg-white cursor-pointer"
             >
-              {CATEGORIES.map((c) => (
+              {categoriesList.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>

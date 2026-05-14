@@ -5,12 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { X } from "lucide-react";
 
-const CATEGORIES = ["General", "Getting Started", "Payments", "Integration", "Shipping", "Returns"];
-
 const schema = z.object({
   category: z.string().min(1, "Category is required"),
-  question: z.string().min(5, "Question must be at least 5 characters"),
-  answer: z.string().min(10, "Answer must be at least 10 characters"),
+  question: z.string().min(1, "Question is required"),
+  answer: z.string().min(1, "Answer is required"),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -18,16 +16,19 @@ type FormData = z.infer<typeof schema>;
 interface Props {
   onClose: () => void;
   onSave: (data: { category: string; question: string; answer: string }) => Promise<void>;
+  categories?: string[];
 }
 
-export default function AddFaqModal({ onClose, onSave }: Props) {
+export default function AddFaqModal({ onClose, onSave, categories }: Props) {
+  const categoriesList = categories && categories.length > 0 ? categories : ["General"];
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { category: "General" },
+    defaultValues: { category: categoriesList[0] },
   });
 
   const onSubmit = async (data: FormData) => {
@@ -51,7 +52,7 @@ export default function AddFaqModal({ onClose, onSave }: Props) {
               {...register("category")}
               className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 bg-white cursor-pointer"
             >
-              {CATEGORIES.map((c) => (
+              {categoriesList.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
