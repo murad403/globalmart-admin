@@ -1,5 +1,18 @@
 import baseApi from "@/redux/api/baseApi";
-import { SignInRequest, SignInResponse, ForgotPasswordRequest, ForgotPasswordResponse, VerifyOtpRequest, VerifyOtpResponse, ResetPasswordRequest, ResetPasswordResponse, ChangePasswordRequest, ChangePasswordResponse } from "./auth.type";
+import { 
+    SignInRequest, 
+    SignInResponse, 
+    ForgotPasswordRequest, 
+    ForgotPasswordResponse, 
+    VerifyOtpRequest, 
+    VerifyOtpResponse, 
+    ResetPasswordRequest, 
+    ResetPasswordResponse, 
+    ChangePasswordRequest, 
+    ChangePasswordResponse,
+    GetPlatformBrandingResponse,
+    UpdatePlatformBrandingResponse 
+} from "./auth.type";
 
 const authApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -50,6 +63,21 @@ const authApi = baseApi.injectEndpoints({
                 method: "PATCH",
                 body: data
             })
+        }),
+        getPlateformBranding: builder.query<GetPlatformBrandingResponse, void>({
+            query: () => ({
+                url: "/admin/platform-branding/",
+                method: "GET",
+            }),
+            providesTags: ["platform-branding"]
+        }),
+        updatePlateformBranding: builder.mutation<UpdatePlatformBrandingResponse, FormData>({
+            query: (data) => ({
+                url: "/admin/platform-branding/",
+                method: "PATCH",
+                body: data,
+            }),
+            invalidatesTags: ["platform-branding"]
         })
     })
 });
@@ -61,5 +89,7 @@ export const {
     useResetPasswordMutation,
     useChangePasswordMutation,
     useGetProfileQuery,
-    useUpdateProfileMutation
+    useUpdateProfileMutation,
+    useGetPlateformBrandingQuery,
+    useUpdatePlateformBrandingMutation
 } = authApi;

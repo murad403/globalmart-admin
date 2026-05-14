@@ -67,3 +67,30 @@ export interface ChangePasswordResponse {
   message: string;
   request_id?: string;
 }
+
+export interface PlatformBrandingData {
+  id: number;
+  platform_logo: string | null;
+  favicon: string | null;
+  marketplace_name: string;
+  support_email: string;
+  platfrom_persentize: number;
+  escrow_period: number;
+  wholesaler_registration_alow: boolean;
+  reseller_registration: boolean;
+  email_verification: boolean;
+}
+
+export interface GetPlatformBrandingResponse {
+  success: boolean;
+  message: string;
+  request_id?: string;
+  data: PlatformBrandingData;
+}
+
+export interface UpdatePlatformBrandingResponse {
+  success: boolean;
+  message: string;
+  request_id?: string;
+  data?: PlatformBrandingData;
+}

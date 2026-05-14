@@ -1,31 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { 
-  Search, 
-  RotateCcw, 
-  X, 
-  CheckCircle2, 
-  Clock, 
-  DollarSign, 
-  Receipt, 
-  Loader2, 
-  Check, 
-  Ban 
-} from "lucide-react";
+import { Search, RotateCcw, X, CheckCircle2, Clock, DollarSign, Receipt, Loader2, Check, Ban } from "lucide-react";
 import { toast } from "sonner";
-
 import PageHeader from "@/components/shared/PageHeader";
 import Pagination from "@/components/shared/Pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-
-import { 
-  useGetPaymentConfirmationQuery, 
-  usePaymentConfirmationMutation 
-} from "@/redux/features/overview/overview.api";
-import { 
-  PaymentConfirmationItem, 
-  PaymentConfirmationMutationResponse 
+import { useGetPaymentConfirmationQuery, usePaymentConfirmationMutation } from "@/redux/features/overview/overview.api";
+import {
+  PaymentConfirmationItem,
+  PaymentConfirmationMutationResponse
 } from "@/redux/features/overview/overview.type";
 
 import PaymentRejectModal from "./PaymentRejectModal";
@@ -92,7 +76,7 @@ export default function FinancePage() {
         action: "confirm",
         reason: "Payment verified successfully.",
       }).unwrap();
-      
+
       toast.success(`Payment verified successfully for Order #${orderId}`);
       // Show success modal displaying detailed breakdown parameters
       setAcceptResultData(res);
@@ -132,9 +116,9 @@ export default function FinancePage() {
     <main className="flex flex-col gap-6">
       {/* Top Main Heading */}
       <div className="flex items-center justify-between gap-4 mb-1">
-        <PageHeader 
-          title="Payment Confirmations" 
-          description="Verify customer order transactions, synchronize seller settlements, and moderate escrows" 
+        <PageHeader
+          title="Payment Confirmations"
+          description="Verify customer order transactions, synchronize seller settlements, and moderate escrows"
         />
       </div>
 
@@ -149,9 +133,9 @@ export default function FinancePage() {
             </div>
           </div>
           <div className="mt-3">
-            <p className="text-2xl font-extrabold text-slate-900">
+            <div className="text-2xl font-extrabold text-slate-900">
               {isLoading ? <Skeleton className="h-7 w-12" /> : stats?.pending_count ?? 0}
-            </p>
+            </div>
             <span className="text-[11px] text-slate-400 font-medium block mt-0.5">Orders waiting verification</span>
           </div>
         </div>
@@ -165,13 +149,13 @@ export default function FinancePage() {
             </div>
           </div>
           <div className="mt-3">
-            <p className="text-2xl font-extrabold text-blue-600">
+            <div className="text-2xl font-extrabold text-blue-600">
               {isLoading ? (
                 <Skeleton className="h-7 w-24" />
               ) : (
                 `$${parseFloat(stats?.pending_amount?.toString() || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
               )}
-            </p>
+            </div>
             <span className="text-[11px] text-slate-400 font-medium block mt-0.5">Pending volume buffer</span>
           </div>
         </div>
@@ -185,9 +169,9 @@ export default function FinancePage() {
             </div>
           </div>
           <div className="mt-3">
-            <p className="text-2xl font-extrabold text-slate-900">
+            <div className="text-2xl font-extrabold text-slate-900">
               {isLoading ? <Skeleton className="h-7 w-12" /> : stats?.confirmed_count ?? 0}
-            </p>
+            </div>
             <span className="text-[11px] text-slate-400 font-medium block mt-0.5">Successfully confirmed orders</span>
           </div>
         </div>
@@ -201,13 +185,13 @@ export default function FinancePage() {
             </div>
           </div>
           <div className="mt-3">
-            <p className="text-2xl font-extrabold text-emerald-600">
+            <div className="text-2xl font-extrabold text-emerald-600">
               {isLoading ? (
                 <Skeleton className="h-7 w-24" />
               ) : (
                 `$${parseFloat(stats?.confirmed_amount?.toString() || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
               )}
-            </p>
+            </div>
             <span className="text-[11px] text-slate-400 font-medium block mt-0.5">Total cleared credits</span>
           </div>
         </div>
@@ -221,7 +205,7 @@ export default function FinancePage() {
             <Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by Order ID or criteria..."
+              placeholder="Search by Order ID or Email or Name..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pr-4 pl-10 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-900 focus:bg-white focus:outline-none transition-all"
@@ -280,7 +264,7 @@ export default function FinancePage() {
                 <th className="px-5 py-3.5 font-semibold">Customer ID</th>
                 <th className="px-5 py-3.5 font-semibold">Order Total</th>
                 <th className="px-5 py-3.5 font-semibold">Order Status</th>
-                <th className="px-5 py-3.5 font-semibold">Payment Token</th>
+                <th className="px-5 py-3.5 font-semibold">Payment Status</th>
                 <th className="px-5 py-3.5 font-semibold text-right">Actions</th>
               </tr>
             </thead>
@@ -317,6 +301,12 @@ export default function FinancePage() {
                   const orderBadge = orderStatusBadges[item.status?.toLowerCase()] || "bg-slate-50 text-slate-700 border-slate-100";
                   const paymentBadge = paymentStatusBadges[item.payment_status?.toLowerCase()] || "bg-slate-100 text-slate-800";
                   const isCurrentRowProcessing = processingOrderId === item.id;
+                  const isActionDisabled = isMutating || isCurrentRowProcessing || item.is_paid || item.status?.toLowerCase() !== "delivered";
+                  const actionTitle = item.is_paid 
+                    ? "Payment already confirmed as paid" 
+                    : item.status?.toLowerCase() !== "delivered" 
+                    ? "Order status must be delivered to verify payment" 
+                    : "Execute action";
 
                   return (
                     <tr key={item.id} className="text-sm text-slate-700 hover:bg-slate-50/50 transition-colors">
@@ -357,9 +347,9 @@ export default function FinancePage() {
                           <button
                             type="button"
                             onClick={() => handleAcceptDirect(item.id)}
-                            disabled={isMutating || isCurrentRowProcessing}
+                            disabled={isActionDisabled}
                             className={`inline-flex items-center gap-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 px-3 py-1.5 text-xs font-bold transition-all border border-emerald-100 shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
-                            title="Directly Accept/Confirm Payment"
+                            title={actionTitle}
                           >
                             {isCurrentRowProcessing ? (
                               <Loader2 className="size-3.5 animate-spin" />
@@ -373,9 +363,9 @@ export default function FinancePage() {
                           <button
                             type="button"
                             onClick={() => setRejectOrderId(item.id)}
-                            disabled={isMutating || isCurrentRowProcessing}
+                            disabled={isActionDisabled}
                             className={`inline-flex items-center gap-1 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 px-3 py-1.5 text-xs font-bold transition-all border border-rose-100 shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
-                            title="Reject Payment Transaction"
+                            title={actionTitle}
                           >
                             <Ban className="size-3.5" />
                             <span>Reject</span>
