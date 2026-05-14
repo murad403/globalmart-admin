@@ -1,5 +1,11 @@
 import baseApi from "@/redux/api/baseApi";
-import { GetOverviewResponse, GetReportsResponse } from "./overview.type";
+import { 
+    GetOverviewResponse, 
+    GetReportsResponse, 
+    GetPaymentConfirmationResponse, 
+    PaymentConfirmationRequest, 
+    PaymentConfirmationMutationResponse 
+} from "./overview.type";
 
 const overviewApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -19,10 +25,32 @@ const overviewApi = baseApi.injectEndpoints({
                 };
             }
         }),
+        getPaymentConfirmation: builder.query<GetPaymentConfirmationResponse, Record<string, string | number | undefined> | void>({
+            query: (params) => {
+                return {
+                    url: "/admin/payment-confirmation/",
+                    method: "GET",
+                    params: params ?? undefined,
+                };
+            }, 
+            providesTags: ["payment-confirmation"],
+        }),
+        paymentConfirmation: builder.mutation<PaymentConfirmationMutationResponse, PaymentConfirmationRequest>({
+            query: (data) => {
+                return {
+                    url: "/admin/payment-confirmation/",
+                    method: "POST",
+                    body: data,
+                };
+            },
+            invalidatesTags: ["payment-confirmation"],
+        }),
     }),
 });
 
 export const {
     useGetOverviewQuery,
-    useGetReportsQuery
+    useGetReportsQuery,
+    useGetPaymentConfirmationQuery,
+    usePaymentConfirmationMutation
 } = overviewApi;

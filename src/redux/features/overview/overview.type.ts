@@ -87,3 +87,60 @@ export interface GetReportsResponse {
     request_id: string;
     data: ReportData;
 }
+
+export interface PaymentConfirmationItem {
+    id: number;
+    owner_id: number | null;
+    customer_id: number | null;
+    status: string;
+    order_total_price: string;
+    payment_status: string;
+    is_paid: boolean;
+    is_delete: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PaymentConfirmationStats {
+    pending_count: number;
+    confirmed_count: number;
+    pending_amount: number;
+    confirmed_amount: number;
+}
+
+export interface GetPaymentConfirmationResponse {
+    success: boolean;
+    message: string;
+    request_id: string;
+    meta: {
+        total_items: number;
+        total_pages: number;
+        current_page: number;
+        next: string | null;
+        previous: string | null;
+        per_page: number;
+    };
+    data: PaymentConfirmationItem[];
+    stats: PaymentConfirmationStats;
+}
+
+export interface PaymentConfirmationRequest {
+    order_id: number;
+    action: "confirm" | "cancel";
+    reason: string;
+}
+
+export interface PaymentConfirmationMutationResponse {
+    success: boolean;
+    message: string;
+    order_id: number;
+    transaction_id?: number | null;
+    seller_id?: number | null;
+    amount_credited?: string | null;
+    seller_new_balance?: string | null;
+    notification_id?: number | null;
+    refund_amount?: string | null;
+    wallet_transaction_id?: number | null;
+    buyer_new_balance?: string | null;
+}
+
