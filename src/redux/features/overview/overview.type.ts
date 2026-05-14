@@ -99,6 +99,7 @@ export interface PaymentConfirmationItem {
     is_delete: boolean;
     created_at: string;
     updated_at: string;
+    is_admin_approved: boolean;
 }
 
 export interface PaymentConfirmationStats {

@@ -301,8 +301,8 @@ export default function FinancePage() {
                   const orderBadge = orderStatusBadges[item.status?.toLowerCase()] || "bg-slate-50 text-slate-700 border-slate-100";
                   const paymentBadge = paymentStatusBadges[item.payment_status?.toLowerCase()] || "bg-slate-100 text-slate-800";
                   const isCurrentRowProcessing = processingOrderId === item.id;
-                  const isActionDisabled = isMutating || isCurrentRowProcessing || item.is_paid || item.status?.toLowerCase() !== "delivered";
-                  const actionTitle = item.is_paid 
+                  const isActionDisabled = isMutating || isCurrentRowProcessing || item?.is_admin_approved;
+                  const actionTitle = item.is_admin_approved
                     ? "Payment already confirmed as paid" 
                     : item.status?.toLowerCase() !== "delivered" 
                     ? "Order status must be delivered to verify payment" 

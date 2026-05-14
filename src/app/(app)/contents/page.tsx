@@ -1,37 +1,22 @@
 "use client";
-
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import {
-  FileText,
-  RefreshCcw,
-  ShieldCheck,
-  ScrollText,
-  Cookie,
-  HelpCircle,
-  Bold,
-  Italic,
-  Underline,
-  Minus,
-  List,
-  Menu,
-  X,
-  Plus,
-  Trash2,
-  Save,
-  Loader2,
-  Layers,
-} from "lucide-react";
+import { FileText, RefreshCcw, ShieldCheck, ScrollText, Cookie, HelpCircle, Bold, Italic, Underline, Minus, List, Menu, X, Plus, Trash2, Save, Loader2, Layers } from "lucide-react";
 import { toast } from "sonner";
 
 import PageHeader from "@/components/shared/PageHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  useGetAllContentsQuery,
-  useAddContentMutation,
-  useUpdateContentMutation,
-  useDeleteContentMutation,
+  useGetAllContentsQuery, useAddContentMutation, useUpdateContentMutation, useDeleteContentMutation,
 } from "@/redux/features/contents/contents.api";
 import { ContentItem } from "@/redux/features/contents/contents.type";
+
+const PAGE_TITLE_OPTIONS = [
+  "About Us",
+  "Terms of Service",
+  "Returns & Refunds",
+  "Privacy Policy",
+  "Shipping Policy"
+];
 
 /* ─── Dynamic Icon Resolver ──────────────────────────────────────────────────── */
 const resolvePageIcon = (title: string) => {
@@ -64,9 +49,8 @@ const ToolbarBtn = ({
       e.preventDefault();
       onClick();
     }}
-    className={`size-8 flex items-center justify-center rounded-lg transition-all cursor-pointer ${
-      active ? "bg-slate-900 text-white shadow-2xs" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-    }`}
+    className={`size-8 flex items-center justify-center rounded-lg transition-all cursor-pointer ${active ? "bg-slate-900 text-white shadow-2xs" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+      }`}
   >
     {children}
   </button>
@@ -202,6 +186,9 @@ export default function ContentsPage() {
   const [newSubTitle, setNewSubTitle] = useState("");
   const [newHtmlContent, setNewHtmlContent] = useState("");
 
+  // Delete modal state
+  const [itemToDelete, setItemToDelete] = useState<{ id: number; title: string } | null>(null);
+
   // Auto-resolve initially active record when fetched items update
   useEffect(() => {
     if (contentItems.length > 0) {
@@ -282,17 +269,20 @@ export default function ContentsPage() {
   };
 
   // Execute resource unbinding via DELETE API exactly
-  const handleDeleteContent = async (id: number, title: string) => {
-    if (!window.confirm(`Are you certain you wish to permanently delete the content page "${title}"?`)) {
-      return;
-    }
+  const handleDeleteContent = (id: number, title: string) => {
+    setItemToDelete({ id, title });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
 
     try {
-      await deleteContentMutation(id).unwrap();
-      toast.success(`Content page "${title}" successfully dropped.`);
-      if (selectedContentId === id) {
+      await deleteContentMutation(itemToDelete.id).unwrap();
+      toast.success(`Content page "${itemToDelete.title}" successfully dropped.`);
+      if (selectedContentId === itemToDelete.id) {
         setSelectedContentId(null);
       }
+      setItemToDelete(null);
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to execute delete instruction on record.");
     }
@@ -384,17 +374,15 @@ export default function ContentsPage() {
                   <div
                     key={item.id}
                     onClick={() => { setSelectedContentId(item.id); setSidebarOpen(false); }}
-                    className={`w-full flex items-start justify-between gap-2 px-3 py-2.5 rounded-xl text-left transition-all cursor-pointer group ${
-                      active
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "text-slate-700 hover:bg-slate-100/80"
-                    }`}
+                    className={`w-full flex items-start justify-between gap-2 px-3 py-2.5 rounded-xl text-left transition-all cursor-pointer group ${active
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "text-slate-700 hover:bg-slate-100/80"
+                      }`}
                   >
                     <div className="flex items-start gap-2.5 min-w-0 flex-1">
                       <DynamicIcon
-                        className={`size-4 mt-0.5 shrink-0 transition-colors ${
-                          active ? "text-white" : "text-slate-400 group-hover:text-slate-600"
-                        }`}
+                        className={`size-4 mt-0.5 shrink-0 transition-colors ${active ? "text-white" : "text-slate-400 group-hover:text-slate-600"
+                          }`}
                       />
                       <div className="min-w-0 flex-1">
                         <p className={`text-xs font-bold leading-snug truncate ${active ? "text-white" : "text-slate-900"}`}>
@@ -415,9 +403,8 @@ export default function ContentsPage() {
                         handleDeleteContent(item.id, item.title);
                       }}
                       disabled={isDeleting}
-                      className={`p-1 rounded-md transition-opacity opacity-0 group-hover:opacity-100 shrink-0 ${
-                        active ? "text-blue-200 hover:text-white hover:bg-blue-700" : "text-slate-400 hover:text-rose-600 hover:bg-rose-50"
-                      }`}
+                      className={`p-1 rounded-md transition-opacity opacity-0 group-hover:opacity-100 shrink-0 ${active ? "text-blue-200 hover:text-white hover:bg-blue-700" : "text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                        }`}
                     >
                       <Trash2 className="size-3.5" />
                     </button>
@@ -495,18 +482,16 @@ export default function ContentsPage() {
                   <button
                     type="button"
                     onClick={() => setRawMode(false)}
-                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                      !rawMode ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"
-                    }`}
+                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${!rawMode ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"
+                      }`}
                   >
                     Formatted Layout
                   </button>
                   <button
                     type="button"
                     onClick={() => setRawMode(true)}
-                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                      rawMode ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"
-                    }`}
+                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${rawMode ? "bg-white text-slate-900 shadow-2xs" : "text-slate-600 hover:text-slate-900"
+                      }`}
                   >
                     Raw Source HTML
                   </button>
@@ -549,14 +534,19 @@ export default function ContentsPage() {
                 <label className="text-xs font-bold text-slate-700 block">
                   Page Title Name <span className="text-rose-500">*</span>
                 </label>
-                <input
-                  type="text"
+                <select
                   required
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="e.g. Terms of Distribution"
-                  className="w-full h-10 border border-slate-200 rounded-xl px-3.5 text-xs text-slate-800 font-semibold focus:outline-none focus:border-slate-900"
-                />
+                  className="w-full h-10 border border-slate-200 rounded-xl px-3.5 text-xs text-slate-800 font-semibold focus:outline-none focus:border-slate-900 bg-white cursor-pointer"
+                >
+                  <option value="" disabled>Select page title...</option>
+                  {PAGE_TITLE_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="space-y-1.5">
@@ -603,6 +593,58 @@ export default function ContentsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {itemToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-xs transition-all">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+              <h3 className="text-sm font-extrabold text-rose-600 flex items-center gap-2">
+                <Trash2 className="size-4" />
+                <span>Confirm Deletion</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setItemToDelete(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-3 text-center">
+              <div className="size-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                <Trash2 className="size-6 stroke-2" />
+              </div>
+              <p className="text-sm font-bold text-slate-800">
+                Delete &quot;{itemToDelete.title}&quot;?
+              </p>
+              <p className="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto">
+                This action cannot be undone. This content page will be permanently removed from the system.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 px-6 py-3 border-t border-slate-100 bg-slate-50/30">
+              <button
+                type="button"
+                onClick={() => setItemToDelete(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {isDeleting ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
+                <span>Delete Page</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
