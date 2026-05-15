@@ -42,6 +42,7 @@ const TriggerAiCustomerPage = () => {
     const [productOpen, setProductOpen] = useState(false);
     const [resellerOpen, setResellerOpen] = useState(false);
     const [aiUserOpen, setAiUserOpen] = useState(false);
+    const [showPreLoading, setShowPreLoading] = useState(false);
 
     // Search State
     const [wholesalerSearch, setWholesalerSearch] = useState("");
@@ -130,6 +131,11 @@ const TriggerAiCustomerPage = () => {
             toast.error(`Selection mismatch: You have selected ${selectedResellers.length} resellers, so you must select exactly ${selectedResellers.length} AI customers.`);
             return;
         }
+
+        setShowPreLoading(true);
+
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        setShowPreLoading(false);
 
         try {
             const payload = {
@@ -613,7 +619,7 @@ const TriggerAiCustomerPage = () => {
                     <button
                         type="button"
                         onClick={handleTrigger}
-                        disabled={isTriggering || !selectedWholesaler || selectedProducts.length === 0 || selectedResellers.length === 0 || selectedAiCustomers.length === 0}
+                        disabled={isTriggering || showPreLoading || !selectedWholesaler || selectedProducts.length === 0 || selectedResellers.length === 0 || selectedAiCustomers.length === 0}
                         className={cn(
                             "inline-flex items-center gap-2 rounded-2xl px-8 py-4 text-sm font-extrabold text-white shadow-xl transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none",
                             "bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-blue-500/25 hover:shadow-2xl"
@@ -633,6 +639,56 @@ const TriggerAiCustomerPage = () => {
                     </button>
                 </div>
             </div>
+
+            {/* Pre-loading Modal */}
+            {showPreLoading && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
+                    <div className="relative w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl animate-in zoom-in-95 duration-300">
+                        <div className="relative mx-auto mb-6 flex size-24 items-center justify-center">
+                            <div className="absolute inset-0 animate-ping rounded-full bg-blue-100/50" />
+                            <div className="absolute inset-0 animate-pulse rounded-full bg-blue-50" />
+                            <div className="relative flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-xl shadow-blue-200">
+                                <Bot className="size-8 text-white animate-bounce" />
+                            </div>
+                        </div>
+                        
+                        <h3 className="mb-2 text-xl font-black text-slate-900">
+                            Synchronizing AI Agents
+                        </h3>
+                        <p className="mb-8 text-sm font-medium text-slate-500 leading-relaxed">
+                            Initializing neural pathways and aligning virtual customer behavior patterns for realistic market activity simulation...
+                        </p>
+                        
+                        <div className="flex flex-col gap-3 px-4">
+                            <div className="flex items-center gap-3 text-left">
+                                <div className="size-2 rounded-full bg-blue-500 animate-pulse" />
+                                <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Verifying Agent Identities</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-left">
+                                <div className="size-2 rounded-full bg-indigo-500 animate-pulse delay-75" />
+                                <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Mapping Target Resellers</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-left">
+                                <div className="size-2 rounded-full bg-purple-500 animate-pulse delay-150" />
+                                <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Generating Purchase Cycles</span>
+                            </div>
+                        </div>
+
+                        <div className="mt-10 flex justify-center">
+                            <div className="flex gap-1">
+                                {[...Array(3)].map((_, i) => (
+                                    <div 
+                                        key={i}
+                                        className="size-1.5 rounded-full bg-blue-500 animate-bounce"
+                                        style={{ animationDelay: `${i * 0.15}s` }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <style jsx global>{`
                 .custom-scrollbar::-webkit-scrollbar {
