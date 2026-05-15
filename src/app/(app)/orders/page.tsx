@@ -6,19 +6,7 @@ import Image from "next/image";
 import { useGetOrdersQuery } from "@/redux/features/order/order.api";
 import Pagination from "@/components/shared/Pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Search, 
-  Eye, 
-  Calendar, 
-  RotateCcw, 
-  Package, 
-  X, 
-  Truck, 
-  CheckCircle2, 
-  Clock, 
-  XCircle,
-  ShoppingBag
-} from "lucide-react";
+import { Search, Eye, Calendar, RotateCcw, Package, X, Truck, CheckCircle2, Clock, XCircle, ShoppingBag } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
 
 const STATUS_OPTIONS = [
@@ -160,9 +148,9 @@ export default function OrdersPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Title & Stats header */}
-      <PageHeader 
-        title="Order Management" 
-        description="Monitor and filter unified wholesale and reseller order operations" 
+      <PageHeader
+        title="Order Management"
+        description="Monitor and filter unified wholesale and reseller order operations"
       />
 
       {/* Premium Filter Controls Bar - Pure Horizontal Row Always */}
@@ -248,6 +236,7 @@ export default function OrdersPage() {
                 <th className="py-4 px-5">Total Amount</th>
                 <th className="py-4 px-5">Payment</th>
                 <th className="py-4 px-5">State</th>
+                <th className="py-4 px-5">AI Order</th>
                 <th className="py-4 px-5 text-right">Action</th>
               </tr>
             </thead>
@@ -319,8 +308,8 @@ export default function OrdersPage() {
                   }) : "N/A";
 
                   return (
-                    <tr 
-                      key={order.id} 
+                    <tr
+                      key={order.id}
                       className={`transition-all hover:bg-slate-50/75 group ${isFetching ? "opacity-60" : ""}`}
                     >
                       {/* Order ID & Date */}
@@ -339,13 +328,13 @@ export default function OrdersPage() {
                         <div className="flex items-center gap-3">
                           <div className="size-11 shrink-0">
                             {buyerImage ? (
-                              <Image 
-                                src={buyerImage} 
-                                alt={order.buyer?.full_name || "Buyer"} 
-                                className="rounded-full size-full object-cover border border-slate-200 shadow-2xs" 
-                                width={100} 
-                                height={100} 
-                                unoptimized 
+                              <Image
+                                src={buyerImage}
+                                alt={order.buyer?.full_name || "Buyer"}
+                                className="rounded-full size-full object-cover border border-slate-200 shadow-2xs"
+                                width={100}
+                                height={100}
+                                unoptimized
                               />
                             ) : (
                               <div className="rounded-full bg-slate-900 size-full flex justify-center items-center text-white font-bold text-sm shadow-2xs">
@@ -370,13 +359,13 @@ export default function OrdersPage() {
                           <div className="flex items-center gap-3">
                             <div className="grid size-12 place-items-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shrink-0 text-slate-400 shadow-2xs group-hover:border-blue-200 transition-colors">
                               {productImage ? (
-                                <Image 
-                                  src={productImage} 
-                                  alt={primaryProduct.name} 
-                                  className="w-full h-full object-cover" 
-                                  width={100} 
-                                  height={100} 
-                                  unoptimized 
+                                <Image
+                                  src={productImage}
+                                  alt={primaryProduct.name}
+                                  className="w-full h-full object-cover"
+                                  width={100}
+                                  height={100}
+                                  unoptimized
                                 />
                               ) : (
                                 <Package className="size-5" />
@@ -423,6 +412,9 @@ export default function OrdersPage() {
                       {/* Status Badge */}
                       <td className="py-4 px-5">
                         {getStatusBadge(order.status || "pending")}
+                      </td>
+                      <td className="py-4 px-5">
+                        {order?.is_fake ? "Yes" : "No"}
                       </td>
 
                       {/* Action Button */}
