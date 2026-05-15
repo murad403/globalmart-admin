@@ -234,7 +234,7 @@ export default function FinancePage() {
               }}
               className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 focus:border-slate-900 focus:outline-none transition-all cursor-pointer"
             >
-              <option value="all">All Orders</option>
+              <option value="all">Customer Orders</option>
               <option value="ai">AI Orders</option>
               <option value="customer">Customer Orders</option>
             </select>
