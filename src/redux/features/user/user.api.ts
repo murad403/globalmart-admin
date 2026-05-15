@@ -4,7 +4,6 @@ import {
     GetAllUsersParams, 
     GetUserDetailsResponse, 
     ToggleStatusResponse,
-    CreateAiCustomerRequest
 } from "./user.type";
 
 const userApi = baseApi.injectEndpoints({
@@ -72,6 +71,44 @@ const userApi = baseApi.injectEndpoints({
             },
             invalidatesTags: ["users"],
         }),
+
+
+
+        // ai automation*********************
+        getWholesalerList: builder.query({
+            query: () => {
+                return {
+                    url: `/admin/automation/wholesalers/`,
+                    method: "GET"
+                };
+            },
+        }),
+        getWholesalerProductList: builder.query({
+            query: (wholesalerId) => {
+                return {
+                    url: `/admin/automation/wholesaler/${wholesalerId}/products/`,
+                    method: "GET"
+                };
+            },
+        }),
+        fetchRelatedResellers: builder.mutation({
+            query: (data) => {
+                return {
+                    url: `/admin/automation/related-resellers/`,
+                    method: "POST",
+                    body: data
+                };
+            },
+        }),
+        triggerAiCustomer: builder.mutation({
+            query: (data) => {
+                return {
+                    url: `/admin/automation/generate-orders/`,
+                    method: "POST",
+                    body: data
+                };
+            },
+        }),
     }),
 });
 
@@ -80,5 +117,9 @@ export const {
     useUserDetailsQuery,
     useStatusToggleMutation,
     useGetAllAiUsersQuery,
-    useCreateAiCustomerMutation
+    useCreateAiCustomerMutation,
+    useGetWholesalerListQuery,
+    useGetWholesalerProductListQuery,
+    useFetchRelatedResellersMutation,
+    useTriggerAiCustomerMutation
 } = userApi;

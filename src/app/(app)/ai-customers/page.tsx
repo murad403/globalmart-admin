@@ -74,13 +74,23 @@ export default function AiCustomersPage() {
                     description="Manage, monitor, and provision AI-driven virtual trading accounts" 
                 />
 
-                <Link
-                    href="/ai-customers/create-ai-customer"
-                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-extrabold text-white shadow-xs transition-all hover:bg-blue-700 hover:shadow-md shrink-0"
-                >
-                    <Plus className="size-4.5 stroke-[3]" />
-                    <span>Create AI Customer</span>
-                </Link>
+                <div className="flex items-center gap-3">
+                    <Link
+                        href="/ai-customers/trigger-ai-customer"
+                        className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-extrabold text-white shadow-xs transition-all hover:bg-amber-600 hover:shadow-md shrink-0"
+                    >
+                        <Bot className="size-4.5 stroke-[3]" />
+                        <span>Trigger AI Customer</span>
+                    </Link>
+
+                    <Link
+                        href="/ai-customers/create-ai-customer"
+                        className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-extrabold text-white shadow-xs transition-all hover:bg-blue-700 hover:shadow-md shrink-0"
+                    >
+                        <Plus className="size-4.5 stroke-[3]" />
+                        <span>Create AI Customer</span>
+                    </Link>
+                </div>
             </div>
 
             {/* Premium Filter Controls Bar */}
