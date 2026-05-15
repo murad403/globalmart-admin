@@ -40,6 +40,20 @@ const messageApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["messages"]
         }),
+        getNotifications: builder.query({
+            query: (page = 1) => ({
+                url: `/notifications/?page=${page}`,
+                method: "GET",
+            }),
+            providesTags: ["messages"]
+        }),
+        getNotificationsUnseenCount: builder.query({
+            query: () => ({
+                url: `/notifications/unseen-count`,
+                method: "GET",
+            }),
+            providesTags: ["messages"]
+        }),
     }),
 });
 
@@ -50,5 +64,9 @@ export const {
     useCreateInboxMutation,
     useInboxListQuery,
     useInboxMessageListQuery,
-    useSendMessageMutation
+    useSendMessageMutation,
+    useGetNotificationsQuery,
+    useGetNotificationsUnseenCountQuery
 } = messageApi;
+
+export default messageApi;

@@ -28,7 +28,7 @@ export default function SignIn() {
         handleSubmit,
         formState: { errors, isSubmitting },
     } = useForm<FormData>({ resolver: zodResolver(schema), defaultValues: {
-        email: "email@gmail.com",
+        email: "gamileschooles@gmail.com",
         password: "14156",
     } });
 

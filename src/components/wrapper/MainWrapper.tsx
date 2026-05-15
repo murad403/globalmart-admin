@@ -1,5 +1,7 @@
+"use client"
+
 import React from "react"
-import { Bell, Search } from "lucide-react"
+import { Search } from "lucide-react"
 
 import AdminSidebar from "../shared/AdminSidebar"
 import TopbarUserProfile from "../shared/TopbarUserProfile"
@@ -7,6 +9,8 @@ import { Input } from "../ui/input"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { TooltipProvider } from "../ui/tooltip"
 import { SidebarTrigger } from "../ui/sidebar"
+
+import NotificationDropdown from "../shared/NotificationDropdown"
 
 const MainWrapper = ({ children }: { children: React.ReactNode }) => {
     return (
@@ -27,13 +31,7 @@ const MainWrapper = ({ children }: { children: React.ReactNode }) => {
                             <SidebarTrigger className="text-slate-600 hover:text-slate-900" />
                         </div>
                         <div className="flex items-center gap-2.5">
-                            <button
-                                type="button"
-                                className="grid size-8 place-items-center rounded-full text-slate-600 hover:bg-white"
-                                aria-label="Notifications"
-                            >
-                                <Bell className="size-4" />
-                            </button>
+                            <NotificationDropdown />
                             <TopbarUserProfile />
                         </div>
                     </header>
