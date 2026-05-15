@@ -100,6 +100,7 @@ export interface PaymentConfirmationItem {
     created_at: string;
     updated_at: string;
     is_admin_approved: boolean;
+    is_fake?: boolean;
 }
 
 export interface PaymentConfirmationStats {

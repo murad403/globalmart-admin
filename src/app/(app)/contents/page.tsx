@@ -236,6 +236,7 @@ export default function ContentsPage() {
 
       toast.success(`Content page "${editTitle}" updated successfully!`);
     } catch (error: any) {
+      console.log(error)
       toast.error(error?.data?.message || "Failed to finalize content page updates.");
     }
   };

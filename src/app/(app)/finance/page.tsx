@@ -36,6 +36,7 @@ export default function FinancePage() {
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [isFakeFilter, setIsFakeFilter] = useState("all");
 
   // Local state for modals and processing action indicators
   const [rejectOrderId, setRejectOrderId] = useState<number | null>(null);
@@ -56,6 +57,7 @@ export default function FinancePage() {
     page,
     search: debouncedSearch,
     status: statusFilter !== "all" ? statusFilter : undefined,
+    is_fake: isFakeFilter === "ai" ? "true" : isFakeFilter === "customer" ? "false" : undefined,
   });
 
   const [paymentConfirmationMutation, { isLoading: isMutating }] = usePaymentConfirmationMutation();
@@ -64,6 +66,7 @@ export default function FinancePage() {
     setSearchInput("");
     setDebouncedSearch("");
     setStatusFilter("all");
+    setIsFakeFilter("all");
     setPage(1);
   };
 
@@ -221,6 +224,22 @@ export default function FinancePage() {
             )}
           </div>
 
+          {/* AI/Customer Filter Dropdown */}
+          <div className="sm:w-48 shrink-0">
+            <select
+              value={isFakeFilter}
+              onChange={(e) => {
+                setIsFakeFilter(e.target.value);
+                setPage(1);
+              }}
+              className="w-full h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 focus:border-slate-900 focus:outline-none transition-all cursor-pointer"
+            >
+              <option value="all">All Orders</option>
+              <option value="ai">AI Orders</option>
+              <option value="customer">Customer Orders</option>
+            </select>
+          </div>
+
           {/* Status Dropdown Selection */}
           <div className="sm:w-48 shrink-0">
             <select
@@ -311,7 +330,14 @@ export default function FinancePage() {
                   return (
                     <tr key={item.id} className="text-sm text-slate-700 hover:bg-slate-50/50 transition-colors">
                       <td className="px-5 py-4">
-                        <span className="font-extrabold text-slate-900 block">#{item.id}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-extrabold text-slate-900 block">#{item.id}</span>
+                          {item.is_fake && (
+                            <span className="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
+                              AI Order
+                            </span>
+                          )}
+                        </div>
                         <span className="text-[10px] text-slate-400 block mt-0.5 truncate max-w-[120px]">
                           {new Date(item.created_at).toLocaleDateString()}
                         </span>
